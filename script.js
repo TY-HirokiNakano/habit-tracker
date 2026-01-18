@@ -23,35 +23,45 @@ function save() {
 function render() {
   list.innerHTML = "";
 
-  habits.forEach((habit, index) => {
+  // 表示用に「未完了 → 完了」の順に並べ替え（habits自体は変更しない）
+  const todo = habits
+    .map((h, i) => ({ h, i }))
+    .filter(({ h }) => !h.done);
+
+  const done = habits
+    .map((h, i) => ({ h, i }))
+    .filter(({ h }) => h.done);
+
+  const view = [...todo, ...done]; // 表示順だけ変更
+
+  view.forEach(({ h: habit, i: originalIndex }) => {
     const li = document.createElement("li");
 
-    // ✅ チェックボックス（完了/未完了）
+    // ✅ チェックボックス
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = habit.done;
 
     checkbox.addEventListener("change", () => {
-      habit.done = checkbox.checked; // 状態更新
-      save();                        // 保存
-      render();                      // 再描画（見た目も更新）
+      habits[originalIndex].done = checkbox.checked; // 元のhabitsを更新
+      save();
+      render();
     });
 
     // テキスト
     const span = document.createElement("span");
     span.textContent = habit.text;
 
-    // 完了なら取り消し線（最低限の見た目）
     if (habit.done) {
       span.style.textDecoration = "line-through";
       span.style.opacity = "0.6";
     }
 
-    // 🗑 削除ボタン（1-Aのまま）
+    // 🗑 削除ボタン
     const delBtn = document.createElement("button");
     delBtn.textContent = "削除";
     delBtn.addEventListener("click", () => {
-      habits.splice(index, 1);
+      habits.splice(originalIndex, 1); // 元のhabitsから削除
       save();
       render();
     });
